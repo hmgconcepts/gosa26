@@ -7,7 +7,7 @@
 <meta name="description" content="God of Seed Academy — Entrance &amp; Assessments. Free school management platform by HMG Concepts.">
 <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
 <meta name="theme-color" content="#1c72e7">
-<link rel="icon" type="image/jpeg" href="assets/img/logo.jpg">
+<link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,7 +61,7 @@
 
 <div id="pwa-install-banner" class="pwa-install">
   <div class="pwa-install-header">
-    <img src="assets/img/logo.jpg" alt="" class="pwa-install-icon">
+    <img src="assets/img/logo.png" alt="" class="pwa-install-icon">
     <div style="flex:1">
       <div class="pwa-install-title">📲 Install School Connect</div>
       <div class="pwa-install-msg">Get push notifications for messages, broadcasts, polls and result slips — even when the app is closed.</div>
@@ -85,10 +85,10 @@
     <div id="modal-footer" class="modal-footer"></div>
   </div>
 </div>
-<div class="app-layout layout1" data-require-role="staff">
+<div class="app-layout layout1" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.jpg" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('G'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
+        <img src="assets/img/logo.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('G'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
         <div>
           <strong>God of Seed Academy</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">GOSA</div>
@@ -390,7 +390,7 @@
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-outline" onclick="EN.load()">↻ Refresh results</button>
-          <button class="btn btn-primary" onclick="EN.bulkLetters()">📜 Generate ALL admission letters</button>
+          <button class="btn btn-primary" onclick="EN.bulkLetters()">📜 Generate ALL admission letters</button><button class="btn btn-outline" onclick="EN.editLetterTemplate()">✏️ Edit admission letter template</button>
           <button class="btn btn-outline" onclick="EN.bulkCerts()">🏆 Print ALL result certificates</button>
           <button class="btn btn-outline" onclick="EN.exportCSV()">⬇ Export results CSV</button>
         </div>
@@ -437,16 +437,17 @@ const EN={ rows:[], exam:null,
   decision(r){ var pass=Number(document.getElementById('en-pass').value||50); return Number(r.percent)>=pass?'admitted':'not_admitted'; },
   slipHTML(r){ var sc=(window.SCHOOL||{}); var pass=Number(document.getElementById('en-pass').value||50); var ok=Number(r.percent)>=pass;
     return '<div style="width:700px;max-width:96vw;border:2px solid '+(sc.primary||'#4f46e5')+';padding:30px;font-family:Arial,sans-serif">'+
-      '<div style="text-align:center"><img src="assets/img/logo.'+(sc.logoExt||'svg')+'" style="width:60px;height:60px;object-fit:contain" onerror="this.style.display=\'none\'"><h2 style="margin:6px 0;color:'+(sc.primary||'#4f46e5')+'">'+esc(sc.name||'School')+'</h2><p style="margin:0;color:#64748b">'+esc(sc.motto||'')+'</p><h3 style="margin:14px 0">ASSESSMENT RESULT SLIP</h3></div>'+
+      '<div style="text-align:center"><img src="assets/img/logo.png" style="width:60px;height:60px;object-fit:contain" onerror="this.style.display=\'none\'"><h2 style="margin:6px 0;color:'+(sc.primary||'#4f46e5')+'">'+esc(sc.name||'School')+'</h2><p style="margin:0;color:#64748b">'+esc(sc.motto||'')+'</p><h3 style="margin:14px 0">ASSESSMENT RESULT SLIP</h3></div>'+
       '<table style="width:100%;font-size:.95rem;line-height:1.9"><tr><td><b>Candidate:</b></td><td>'+esc(r.student_name)+'</td><td><b>Class:</b></td><td>'+esc(r.student_class||'-')+'</td></tr>'+
       '<tr><td><b>Assessment:</b></td><td colspan=3>'+esc((EN.exam&&EN.exam.title)||'')+'</td></tr>'+
       '<tr><td><b>Score:</b></td><td>'+r.score+' / '+r.total+'</td><td><b>Percentage:</b></td><td>'+Number(r.percent).toFixed(1)+'%</td></tr>'+
       '<tr><td><b>Correct:</b></td><td>'+(r.correct_count||0)+'</td><td><b>Wrong:</b></td><td>'+(r.wrong_count||0)+'</td></tr>'+
       '<tr><td><b>Outcome:</b></td><td colspan=3><b style="color:'+(ok?'#16a34a':'#dc2626')+'">'+(ok?'QUALIFIED FOR ADMISSION':'NOT QUALIFIED')+'</b></td></tr></table>'+
       '<p style="margin-top:18px;font-size:.75rem;color:#94a3b8">Ref: '+esc(r.cert_code||r.id.slice(0,8))+' · Generated '+new Date().toLocaleDateString()+'</p></div>'; },
-  letterHTML(r){ var sc=(window.SCHOOL||{}); var ok=this.decision(r)==='admitted'; var ses=document.getElementById('en-session').value||'';
+  certHTML(r){ var sc=(window.SCHOOL||{}); var code=r.cert_code||('ENT-'+String(r.id||Math.random()).slice(0,8).toUpperCase()); var pass=Number(document.getElementById('en-pass').value||50); var ok=Number(r.percent)>=pass; var sig=localStorage.getItem('sc-signature-url')||'', pn=localStorage.getItem('sc-principal-name')||'Principal'; var sigBlock=sig?'<img src="'+sig+'" style="height:55px;max-width:160px;object-fit:contain;display:block;margin:0 auto -6px">':''; return '<div style="width:820px;max-width:96vw;border:12px double '+(sc.primary||'#4f46e5')+';padding:42px;text-align:center;font-family:Georgia,serif;background:#fff"><img src="assets/img/logo.png" style="width:70px;height:70px;object-fit:contain" onerror="this.style.display=\'none\'"><h1 style="margin:8px 0;color:'+(sc.primary||'#4f46e5')+'">'+esc(sc.name||'School')+'</h1><p style="color:#64748b;margin:0 0 18px">'+esc(sc.motto||'')+'</p><h2 style="letter-spacing:2px;color:'+(sc.accent||'#964eec')+'">ENTRANCE ASSESSMENT CERTIFICATE</h2><p>This is to certify that</p><h2 style="display:inline-block;border-bottom:2px solid '+(sc.accent||'#964eec')+';padding:0 30px 6px">'+esc(r.student_name||'Candidate')+'</h2><p style="max-width:620px;margin:18px auto;line-height:1.6">sat for '+esc((EN.exam&&EN.exam.title)||'the entrance assessment')+' for '+esc(r.student_class||'')+' and scored <b>'+Number(r.percent||0).toFixed(1)+'%</b>. Outcome: <b style="color:'+(ok?'#16a34a':'#dc2626')+'">'+(ok?'QUALIFIED':'NOT QUALIFIED')+'</b>.</p><div style="display:flex;justify-content:space-between;margin-top:42px;font-size:.85rem"><div>____________________<br>Date: '+new Date().toLocaleDateString()+'</div><div>'+sigBlock+'____________________<br>'+esc(pn)+'</div></div><p style="margin-top:22px;font-size:.72rem;color:#94a3b8">Verification code: <b>'+esc(code)+'</b></p></div>'; },
+  letterHTML(r){ var sc=(window.SCHOOL||{}); var ok=this.decision(r)==='admitted'; var ses=document.getElementById('en-session').value||''; var tmpl=localStorage.getItem('sc-admission-letter-template')||''; if(tmpl){ tmpl=tmpl.replace(/{{student}}/g,r.student_name||'').replace(/{{class}}/g,r.student_class||'').replace(/{{school}}/g,sc.name||'School').replace(/{{session}}/g,ses).replace(/{{score}}/g,Number(r.percent||0).toFixed(1)); return '<div style="width:720px;max-width:96vw;padding:40px;font-family:Georgia,serif;line-height:1.7"><div style="border-bottom:3px solid '+(sc.primary||'#4f46e5')+';padding-bottom:10px"><h2 style="margin:0;color:'+(sc.primary||'#4f46e5')+'">'+esc(sc.name||'School')+'</h2><div style="font-size:.8rem;color:#64748b">'+esc(sc.address||'')+' · '+esc(sc.phone||'')+'</div></div>'+tmpl.split('\n').map(x=>'<p>'+esc(x)+'</p>').join('')+'</div>'; }
     return '<div style="width:720px;max-width:96vw;padding:40px;font-family:Georgia,serif;line-height:1.7">'+
-      '<div style="display:flex;align-items:center;gap:12px;border-bottom:3px solid '+(sc.primary||'#4f46e5')+';padding-bottom:10px"><img src="assets/img/logo.'+(sc.logoExt||'svg')+'" style="width:56px;height:56px;object-fit:contain" onerror="this.style.display=\'none\'"><div><h2 style="margin:0;color:'+(sc.primary||'#4f46e5')+'">'+esc(sc.name||'School')+'</h2><div style="font-size:.8rem;color:#64748b">'+esc(sc.address||'')+' · '+esc(sc.phone||'')+' · '+esc(sc.email||'')+'</div></div></div>'+
+      '<div style="display:flex;align-items:center;gap:12px;border-bottom:3px solid '+(sc.primary||'#4f46e5')+';padding-bottom:10px"><img src="assets/img/logo.png" style="width:56px;height:56px;object-fit:contain" onerror="this.style.display=\'none\'"><div><h2 style="margin:0;color:'+(sc.primary||'#4f46e5')+'">'+esc(sc.name||'School')+'</h2><div style="font-size:.8rem;color:#64748b">'+esc(sc.address||'')+' · '+esc(sc.phone||'')+' · '+esc(sc.email||'')+'</div></div></div>'+
       '<p style="text-align:right;margin:16px 0 0">'+new Date().toLocaleDateString()+'</p>'+
       '<p style="margin:6px 0"><b>'+esc(r.student_name)+'</b></p>'+
       '<h3 style="text-align:center;text-decoration:underline;margin:18px 0">'+(ok?'LETTER OF ADMISSION':'NOTIFICATION OF ASSESSMENT OUTCOME')+'</h3>'+
@@ -458,9 +459,9 @@ const EN={ rows:[], exam:null,
   printMany(htmls,title){ var w=window.open('','_blank'); w.document.write('<html><head><title>'+title+'</title></head><body>'+htmls.map(h=>'<div style="page-break-after:always;display:flex;justify-content:center;padding:14px">'+h+'</div>').join('')+'<script>window.onload=()=>window.print()<\/script></body></html>'); w.document.close(); },
   slip(i){ this.printOne(this.slipHTML(this.rows[i]),'Result Slip'); },
   letter(i){ var r=this.rows[i]; this.printOne(this.letterHTML(r),'Admission Letter'); this._logLetter(r); },
-  cert(i){ var r=this.rows[i]; if(window.Super){ Super.cert.print&&Super.cert.print(); } this.printOne(this.slipHTML(r),'Certificate'); },
+  cert(i){ var r=this.rows[i]; this.printOne(this.certHTML(r),'Entrance Certificate'); },
   bulkLetters(){ if(!this.rows.length){toast('No results loaded','warning');return;} this.printMany(this.rows.map(r=>this.letterHTML(r)),'Admission Letters'); this.rows.forEach(r=>this._logLetter(r)); },
-  bulkCerts(){ if(!this.rows.length){toast('No results loaded','warning');return;} this.printMany(this.rows.map(r=>this.slipHTML(r)),'Result Certificates'); },
+  bulkCerts(){ if(!this.rows.length){toast('No results loaded','warning');return;} this.printMany(this.rows.map(r=>this.certHTML(r)),'Entrance Certificates'); },
   async _logLetter(r){ if(!sb)return; try{ await sb.from('admission_letters').insert({ candidate_name:r.student_name, candidate_class:r.student_class, exam_id:r.exam_id, result_id:r.id, percent:r.percent, decision:this.decision(r), session:document.getElementById('en-session').value||null }); }catch(e){} },
   exportCSV(){ if(!this.rows.length){toast('No results','warning');return;} var keys=['student_name','student_class','score','total','percent','correct_count','wrong_count']; var csv=[keys.join(',')].concat(this.rows.map(r=>keys.map(k=>'"'+String(r[k]==null?'':r[k]).replace(/"/g,'""')+'"').join(','))).join('\n'); var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='assessment-results.csv';a.click(); }
 };

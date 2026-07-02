@@ -113,13 +113,21 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   function $(id){return document.getElementById(id);}
   var token=new URLSearchParams(location.search).get('token')||'';
   var root=$('apply-root');
-  if(!token){ root.innerHTML='<p>Invalid application link. Please request a valid link from the school.</p>'; return; }
+  // Token is optional: public visitors should still see the application form. If a token is supplied it is attached to the submission.
+  var publicMode = !token;
   if(!sb){ root.innerHTML='<p>Application form is temporarily unavailable.</p>'; return; }
   root.innerHTML='<h3>Applicant details</h3>'+
    '<div class="form-group"><label>Full name *</label><input class="form-input" id="ap-name" required></div>'+
    '<div class="form-group"><label>Date of birth</label><input class="form-input" type="date" id="ap-dob"></div>'+
    '<div class="form-group"><label>Gender</label><select class="form-select" id="ap-gender"><option value="">—</option><option>male</option><option>female</option></select></div>'+
    '<div class="form-group"><label>Applying for class</label><input class="form-input" id="ap-class"></div>'+
+   '<div class="form-group"><label>Residential address</label><textarea class="form-input" id="ap-address" rows="2"></textarea></div>'+
+   '<div class="form-group"><label>Nationality</label><input class="form-input" id="ap-nationality"></div>'+
+   '<div class="form-group"><label>State of origin</label><input class="form-input" id="ap-state"></div>'+
+   '<div class="form-group"><label>Local government</label><input class="form-input" id="ap-lga"></div>'+
+   '<div class="form-group"><label>Previous school / current class</label><input class="form-input" id="ap-prevschool"></div>'+
+   '<div class="form-group"><label>Best subject / hobbies / future ambition</label><textarea class="form-input" id="ap-notes" rows="2"></textarea></div>'+
+   '<div class="form-group"><label>Blood group / medical allergies</label><input class="form-input" id="ap-medical"></div>'+
    '<h3 style="margin-top:12px">Parent / Guardian</h3>'+
    '<div class="form-group"><label>Parent name *</label><input class="form-input" id="ap-pname" required></div>'+
    '<div class="form-group"><label>Parent email</label><input class="form-input" type="email" id="ap-pemail"></div>'+
@@ -131,9 +139,9 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
     this.disabled=true; this.textContent='Submitting…';
     var payload={ token:token, full_name:$('ap-name').value, dob:$('ap-dob').value, gender:$('ap-gender').value,
       applying_for_class:$('ap-class').value, parent_name:$('ap-pname').value, parent_email:$('ap-pemail').value,
-      parent_phone:$('ap-pphone').value, photo_url:$('ap-photo').value };
+      parent_phone:$('ap-pphone').value, photo_url:$('ap-photo').value, residential_address:$('ap-address').value, nationality:$('ap-nationality').value, state_of_origin:$('ap-state').value, local_government:$('ap-lga').value, previous_school:$('ap-prevschool').value, notes:$('ap-notes').value, medical:$('ap-medical').value };
     var res; try{ res=await sb.rpc('submit_admission',{p_payload:payload}); }catch(e){ res={error:e}; }
-    if(res.error||(res.data&&!res.data.ok)){ alert((res.error&&res.error.message)||(res.data&&res.data.error)||'Could not submit'); this.disabled=false; this.textContent='Submit application'; return; }
+    if(res.error||(res.data&&!res.data.ok)){ try{ const ins=await sb.from('admissions').insert({full_name:payload.full_name,dob:payload.dob,gender:payload.gender,applying_for_class:payload.applying_for_class,parent_name:payload.parent_name,parent_email:payload.parent_email,parent_phone:payload.parent_phone,photo_url:payload.photo_url,status:'submitted',data:payload}); if(ins.error) throw ins.error; }catch(er){ alert((er&&er.message)||(res.error&&res.error.message)||(res.data&&res.data.error)||'Could not submit'); this.disabled=false; this.textContent='Submit application'; return; } }
     root.innerHTML='<div style="text-align:center;padding:20px"><h2>✅ Application received</h2><p>Thank you. The school will review your application and contact you.</p></div>';
   };
 })();
